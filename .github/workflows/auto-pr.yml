@@ -15,7 +15,14 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Open or update PR
+      - name: Checkout do commit que disparou
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.workflow_run.head_repository.full_name }}
+          ref: ${{ github.event.workflow_run.head_branch }}
+          fetch-depth: 0
+
+      - name: Open or update PR to main
         uses: repo-sync/pull-request@v2
         with:
           source_branch: "development"
@@ -23,4 +30,5 @@ jobs:
           pr_title: "Auto PR: development → main (CI OK)"
           pr_body: "Gerado automaticamente após o Go CI passar na development."
           pr_label: "auto-pr"
+          pr_draft: false
           github_token: ${{ secrets.GITHUB_TOKEN }}
