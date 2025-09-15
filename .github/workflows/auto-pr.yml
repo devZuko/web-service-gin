@@ -1,0 +1,26 @@
+name: Auto PR após CI
+
+on:
+  workflow_run:
+    workflows: [ "Go CI" ]
+    types: [ completed ]
+    branches: [ "development" ]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  open-pr:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open or update PR
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: "development"
+          destination_branch: "main"
+          pr_title: "Auto PR: development → main (CI OK)"
+          pr_body: "Gerado automaticamente após o Go CI passar na development."
+          pr_label: "auto-pr"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
