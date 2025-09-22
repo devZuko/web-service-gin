@@ -1,13 +1,14 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
-	"testing"
+    "bytes"
+    "encoding/json"
+    "net/http"
+    "net/http/httptest"
+    "testing"
 
-	"github.com/gin-gonic/gin"
+    "github.com/gin-gonic/gin"
+    "golang.org/x/crypto/bcrypt"
 )
 
 // Helpers
@@ -44,17 +45,25 @@ func performRequest(r *gin.Engine, method, path string, body []byte, token strin
 	return w
 }
 
-// Reset do estado global para isolamento entre testes
 func resetState() {
-	users = []User{
-		{ID: "1", Username: "admin", Password: "$2a$10$YKyCqY8WxLrKvEwHwqKvLOqVxx6VgX8RS6pAP8Km6ll8Lf6vNEEGy"}, // admin123
-		{ID: "2", Username: "user", Password: "$2a$10$PZoG5U0W0az3gXXfJ6h.4.lPmKz3p8J2B8o/A7iqGgSrqvE3vXJZ."}, // user123
-	}
-	albums = []album{
-		{ID: "1", Title: "Blue Train", Artist: "John Coltrane", Price: 56.99},
-		{ID: "2", Title: "Jeru", Artist: "Gerry Mulligan", Price: 17.99},
-		{ID: "3", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99},
-	}
+    hashAdmin, err := bcrypt.GenerateFromPassword([]byte("admin123"), bcrypt.MinCost)
+    if err != nil {
+        panic(err)
+    }
+    hashUser, err := bcrypt.GenerateFromPassword([]byte("user123"), bcrypt.MinCost)
+    if err != nil {
+        panic(err)
+    }
+
+    users = []User{
+        {ID: "1", Username: "admin", Password: string(hashAdmin)},
+        {ID: "2", Username: "user",  Password: string(hashUser)},
+    }
+    albums = []album{
+        {ID: "1", Title: "Blue Train", Artist: "John Coltrane", Price: 56.99},
+        {ID: "2", Title: "Jeru", Artist: "Gerry Mulligan", Price: 17.99},
+        {ID: "3", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99},
+    }
 }
 
 func getValidToken(t *testing.T) string {

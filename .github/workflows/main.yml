@@ -2,9 +2,9 @@ name: Go CI
 
 on:
   push:
-    branches: [ "development" ]
+    branches: [ "development" ]          # build/test ao dar push na development
   pull_request:
-    branches: [ "development" ]
+    branches: [ "main" ]                 # testa/alerta quando a PR tem destino main
     types: [opened, synchronize, reopened]
 
 concurrency:
@@ -21,7 +21,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: 'go.mod'   # usa a versão do go.mod
+          go-version-file: 'go.mod'
           cache: true
 
       - name: Build
@@ -47,7 +47,7 @@ jobs:
         if: always() && github.event_name == 'pull_request'
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          STATUS: ${{ steps.tests.outcome }}                      # success | failure
+          STATUS: ${{ steps.tests.outcome }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_URL: ${{ github.event.pull_request.html_url }}
